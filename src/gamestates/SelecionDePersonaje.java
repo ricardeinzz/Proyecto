@@ -72,13 +72,13 @@ public class SelecionDePersonaje extends Estados implements MetodosDeEstado {
         playButton.draw(g);
 
 
-        //Center
+        
         drawChar(g, playerIndex, menuX + menuWidth / 2, menuY + menuHeight / 2);
 
-        //Left
+        
         drawChar(g, playerIndex - 1, menuX, menuY + menuHeight / 2);
 
-        //Left
+      
         drawChar(g, playerIndex + 1, menuX + menuWidth, menuY + menuHeight / 2);
 
     }

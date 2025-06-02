@@ -110,7 +110,7 @@ public class Jugador extends Entidad {
                 estado = MUERTO;
                 contadorAnimacion = 0;
                 indiceAnimacion = 0;
-                jugando.setPlayerDying(true);
+                //jugando.setPlayerDying(true);
                 jugando.getGame().getAudioPlayer().reproducirEfecto(AudioJugador.MUERTO);
 
               
@@ -119,8 +119,8 @@ public class Jugador extends Entidad {
                     velocidadAire = 0;
                 }
             } else if (indiceAnimacion == personajeJugable.getSpriteAmount(MUERTO) - 1 && contadorAnimacion >= ANI_VELOCIDAD - 1) {
-                jugando.setGameOver(true);
-                jugando.getGame().getAudioPlayer().detenerCancion();
+//                jugando.setGameOver(true);
+               // jugando.getGame().getAudioPlayer().detenerCancion();
                 jugando.getGame().getAudioPlayer().reproducirEfecto(AudioJugador.GAMEOVER);
             } else {
                 actualizarAnimacionTick();
@@ -271,16 +271,20 @@ public class Jugador extends Entidad {
      */
 
     private void dibujarUI(Graphics g) {
-        // Background ui
-        g.drawImage(imgBarraDeEstado, barraDeEstadoX, barraDeEstadoY, anchoBarraDeEstado, altoBarraDeEstado, null);
+    	// Si es jugador2, dibuja más abajo
+    	boolean esJugador2 = this == jugando.getPlayer2();
+    	int offsetY = esJugador2 ? (int)(70 * Juego.SCALE) : 0;
 
-        // Health bar
-        g.setColor(Color.red);
-        g.fillRect(barraDeVidaXInicio + barraDeEstadoX, barraDeVidaYInicio + barraDeEstadoY, anchoVida, altoBarraDeVida);
+    	// Background UI
+    	g.drawImage(imgBarraDeEstado, barraDeEstadoX, barraDeEstadoY + offsetY, anchoBarraDeEstado, altoBarraDeEstado, null);
 
-        // Power Bar
-        g.setColor(Color.yellow);
-        g.fillRect(barraDePoderXInicio + barraDeEstadoX, barraDePoderYInicio + barraDeEstadoY, anchoPoder, altoBarraDePoder);
+    	// Health bar
+    	g.setColor(Color.red);
+    	g.fillRect(barraDeVidaXInicio + barraDeEstadoX, barraDeVidaYInicio + barraDeEstadoY + offsetY, anchoVida, altoBarraDeVida);
+
+    	// Power bar
+    	g.setColor(Color.yellow);
+    	g.fillRect(barraDePoderXInicio + barraDeEstadoX, barraDePoderYInicio + barraDeEstadoY + offsetY, anchoPoder, altoBarraDePoder);
     }
     /**
      * Controla el avance de animaciones del jugador.
@@ -583,5 +587,7 @@ public class Jugador extends Entidad {
         }
 
     }
-
+    public boolean estaMuerto() {
+        return vidaActual <= 0 && estado == MUERTO;
+    }
 }

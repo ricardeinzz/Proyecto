@@ -2,6 +2,7 @@ package gamestates;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
@@ -134,10 +135,25 @@ public class Jugando extends Estados implements MetodosDeEstado {
 	public void loadNextLevel() {
 		levelManager.setLevelIndex(levelManager.getLevelIndex() + 1);
 		levelManager.loadNextLevel();
-		jugador.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
-		jugador2.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
+
+		Point spawn = levelManager.getCurrentLevel().getPlayerSpawn();
+		jugador.setSpawn(spawn);
+
+		Point spawnJugador2 = new Point(spawn.x + 50, spawn.y);
+		jugador2.setSpawn(spawnJugador2);
+
+		// Esto fuerza a que reconozca si está tocando el piso
+		jugador.loadLvlData(levelManager.getCurrentLevel().getLevelData());
+		jugador2.loadLvlData(levelManager.getCurrentLevel().getLevelData());
+
 		resetAll();
 		drawShip = false;
+//		levelManager.setLevelIndex(levelManager.getLevelIndex() + 1);
+//		levelManager.loadNextLevel();
+//		jugador.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
+//		jugador2.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
+//		resetAll();
+//		drawShip = false;
 	}
 
 	private void loadStartLevel() {
@@ -181,30 +197,40 @@ public class Jugando extends Estados implements MetodosDeEstado {
 	@Override
 // Actualiza la lógica del juego dependiendo del estado actual (pausado, victoria, derrota, etc.).
 	public void update() {
-		if (paused)
+		if (paused) {
 			pantallaDePausa.update();
-		else if (lvlCompleted)
+		} else if (lvlCompleted) {
 			pantallaDeNivelCompleto.update();
-		else if (gameCompleted)
+		} else if (gameCompleted) {
 			pantallaDeJuegoCompleto.update();
-		else if (gameOver)
+		} else if (gameOver) {
 			pantallaDeGameOver.update();
-		else if (playerDying) {
-			jugador.actualizar();
-			jugador2.actualizar();
 		} else {
 			updateDialogue();
+
 			if (drawRain)
 				lluvia.update(xLvlOffset);
+
 			levelManager.update();
+
 			objectManager.update(levelManager.getCurrentLevel().getLevelData(), jugador);
 			objectManager.update(levelManager.getCurrentLevel().getLevelData(), jugador2);
+
 			jugador.actualizar();
 			jugador2.actualizar();
+
 			enemyManager.actualizar(levelManager.getCurrentLevel().getLevelData());
+
 			checkCloseToBorder();
+
 			if (drawShip)
 				updateShipAni();
+
+			// Verifica si ambos jugadores están muertos
+			if (!paused &&jugador.estaMuerto() && jugador2.estaMuerto()) {
+				juego.getAudioPlayer().detenerCancion();
+				setGameOver(true);
+			}
 		}
 	}
 
@@ -260,14 +286,36 @@ public class Jugando extends Estados implements MetodosDeEstado {
 
 // Verifica si el jugador se acerca a los bordes visibles para ajustar la cámara.
 	private void checkCloseToBorder() {
-		int playerX = (int) jugador.obtenerCajaColision().x;
-		int diff = playerX - xLvlOffset;
+		int xCentro;
+
+		// Verifica quién está vivo
+		boolean j1Vivo = !jugador.estaMuerto();
+		boolean j2Vivo = !jugador2.estaMuerto();
+
+		if (j1Vivo && j2Vivo) {
+			// Ambos vivos → cámara sigue el centro entre los dos
+			int x1 = (int) jugador.obtenerCajaColision().x;
+			int x2 = (int) jugador2.obtenerCajaColision().x;
+			xCentro = (x1 + x2) / 2;
+		} else if (j1Vivo) {
+			// Solo jugador 1 vivo
+			xCentro = (int) jugador.obtenerCajaColision().x;
+		} else if (j2Vivo) {
+			// Solo jugador 2 vivo
+			xCentro = (int) jugador2.obtenerCajaColision().x;
+		} else {
+			// Ambos muertos → no mover cámara
+			return;
+		}
+
+		int diff = xCentro - xLvlOffset;
 
 		if (diff > rightBorder)
 			xLvlOffset += diff - rightBorder;
 		else if (diff < leftBorder)
 			xLvlOffset += diff - leftBorder;
 
+		// Limitar desplazamiento
 		xLvlOffset = Math.max(Math.min(xLvlOffset, maxLvlOffsetX), 0);
 	}
 
@@ -369,7 +417,7 @@ public class Jugando extends Estados implements MetodosDeEstado {
 
 	public void checkSpikesTouched(Jugador p) {
 		objectManager.checkSpikesTouched(p);
-	} 
+	}
 
 	@Override
 // Detecta clics del mouse y activa ataques del jugador según el botón presionado.
@@ -387,39 +435,38 @@ public class Jugando extends Estados implements MetodosDeEstado {
 	public void keyPressed(KeyEvent e) {
 		if (!gameOver && !gameCompleted && !lvlCompleted) {
 			switch (e.getKeyCode()) {
-			case KeyEvent.VK_A:
-				jugador.setIzquierda(true);
-				break;
-			case KeyEvent.VK_D:
+				// Jugador 1
+				case KeyEvent.VK_A:
+					jugador.setIzquierda(true);
+					break;
+				case KeyEvent.VK_D:
+					jugador.setDerecha(true);
+					break;
+				case KeyEvent.VK_SPACE:
+					jugador.setSalto(true);
+					break;
 
-				jugador.setDerecha(true);
-				break;
-			case KeyEvent.VK_SPACE:
-				jugador.setSalto(true);
-				break;
-			case KeyEvent.VK_ESCAPE:
-				paused = !paused;
+				// Jugador 2
+				case KeyEvent.VK_LEFT:
+					jugador2.setIzquierda(true);
+					break;
+				case KeyEvent.VK_RIGHT:
+					jugador2.setDerecha(true);
+					break;
+				case KeyEvent.VK_UP:
+					jugador2.setSalto(true);
+					break;
+				case KeyEvent.VK_M:
+					jugador2.setAtacando(true);
+					break;
+				case KeyEvent.VK_N:
+					jugador2.powerAttack();
+					break;
 
-			}
-			switch (e.getKeyCode()) {
-			case KeyEvent.VK_M:
-				jugador2.setAtacando(true);
-				break;
-			case KeyEvent.VK_N:
-				jugador2.powerAttack();
-				break;
-			case KeyEvent.VK_LEFT:
-				jugador2.setIzquierda(true);
-				break;
-			case KeyEvent.VK_RIGHT:
-
-				jugador2.setDerecha(true);
-				break;
-			case KeyEvent.VK_UP:
-				jugador2.setSalto(true);
-				break;
-			case KeyEvent.VK_ESCAPE:
-				paused = !paused;
+				// Pausa (una sola vez)
+				case KeyEvent.VK_ESCAPE:
+					paused = !paused;
+					break;
 			}
 		}
 	}
@@ -452,10 +499,11 @@ public class Jugando extends Estados implements MetodosDeEstado {
 			case KeyEvent.VK_M:
 				jugador2.setAtacando(false);
 				break;
-			
-					}
+
+			}
+		}
 	}
-	}
+
 	public void mouseDragged(MouseEvent e) {
 		if (!gameOver && !gameCompleted && !lvlCompleted)
 			if (paused)
@@ -529,9 +577,11 @@ public class Jugando extends Estados implements MetodosDeEstado {
 	public Jugador getPlayer() {
 		return jugador;
 	}
+
 	public Jugador getPlayer2() {
 		return jugador2;
 	}
+
 	public EnemyManager getEnemyManager() {
 		return enemyManager;
 	}
