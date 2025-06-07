@@ -7,6 +7,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Random;
 
 import efectos.EfectosDeDialogo;
@@ -14,7 +17,7 @@ import efectos.Lluvia;
 import entidades.EnemyManager;
 import entidades.Jugador;
 import entidades.PersonajeJugable;
-
+import utilz.*;
 import java.util.ArrayList;
 
 import main.Juego;
@@ -85,7 +88,9 @@ public class Jugando extends Estados implements MetodosDeEstado {
 	private boolean drawShip = true;
 	private int shipAni, shipTick, shipDir = 1;
 	private float shipHeightDelta, shipHeightChange = 0.05f * Juego.SCALE;
+	private SecuenciaDeGuion intro;
 
+	
 	public Jugando(Juego juego) {
 		super(juego);
 		initClasses();
@@ -106,6 +111,38 @@ public class Jugando extends Estados implements MetodosDeEstado {
 		calcLvlOffset();
 		loadStartLevel();
 		setDrawRainBoolean();
+		iniciarEscena();
+	}
+	public void iniciarEscena() {
+	    int nivelActual = levelManager.getLevelIndex() + 1;
+	    intro = cargarGuionDesdeArchivo("res/dialogos/dialogos.txt", nivelActual);
+	}
+	private SecuenciaDeGuion cargarGuionDesdeArchivo(String nombreArchivo, int nivel) {
+	    SecuenciaDeGuion secuencia = new SecuenciaDeGuion();
+	    try (BufferedReader br = new BufferedReader(new FileReader(nombreArchivo))) {
+	        String linea;
+	        boolean dentroDelNivel = false;
+	        while ((linea = br.readLine()) != null) {
+	            linea = linea.trim();
+	            if (linea.isEmpty()) continue;
+	            if (linea.startsWith("#")) {
+	                dentroDelNivel = linea.contains("Nivel " + nivel);
+	                continue;
+	            }
+	            if (!dentroDelNivel) continue;
+
+	            if (linea.startsWith("DIALOGO ")) {
+	                String texto = linea.substring("DIALOGO ".length());
+	                secuencia.agregarDialogo(texto);
+	            } else if (linea.startsWith("ESPERA ")) {
+	                long ms = Long.parseLong(linea.substring("ESPERA ".length()));
+	                secuencia.agregarEspera(ms);
+	            }
+	        }
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	    return secuencia;
 	}
 
 	private void loadDialogue() {
@@ -148,6 +185,7 @@ public class Jugando extends Estados implements MetodosDeEstado {
 
 		resetAll();
 		drawShip = false;
+		iniciarEscena();
 //		levelManager.setLevelIndex(levelManager.getLevelIndex() + 1);
 //		levelManager.loadNextLevel();
 //		jugador.setSpawn(levelManager.getCurrentLevel().getPlayerSpawn());
@@ -208,6 +246,12 @@ public class Jugando extends Estados implements MetodosDeEstado {
 		} else {
 			updateDialogue();
 
+			//Control de escena narrativa
+			if (intro != null && !intro.estaTerminada()) {
+				intro.actualizar();
+				return; // Pausa el resto del juego mientras hay diálogo
+			}
+
 			if (drawRain)
 				lluvia.update(xLvlOffset);
 
@@ -226,8 +270,7 @@ public class Jugando extends Estados implements MetodosDeEstado {
 			if (drawShip)
 				updateShipAni();
 
-			// Verifica si ambos jugadores están muertos
-			if (!paused &&jugador.estaMuerto() && jugador2.estaMuerto()) {
+			if (!paused && jugador.estaMuerto() && jugador2.estaMuerto()) {
 				juego.getAudioPlayer().detenerCancion();
 				setGameOver(true);
 			}
@@ -321,6 +364,7 @@ public class Jugando extends Estados implements MetodosDeEstado {
 
 	@Override
 // Dibuja todos los elementos visuales en pantalla, como jugador, enemigos, fondo y efectos.
+	
 	public void draw(Graphics g) {
 		g.drawImage(backgroundImg, 0, 0, Juego.GAME_WIDTH, Juego.GAME_HEIGHT, null);
 
@@ -341,6 +385,28 @@ public class Jugando extends Estados implements MetodosDeEstado {
 		objectManager.drawBackgroundTrees(g, xLvlOffset);
 		drawDialogue(g, xLvlOffset);
 
+		//Dibujar caja de diálogo del guion si hay texto activo
+		if (intro != null && !intro.estaTerminada()) {
+			String texto = intro.getTextoActual();
+			System.out.println("Texto visible: " + texto); // 👈 DEBUG opcional
+
+			if (!texto.isEmpty()) {
+				int padding = 20;
+				int boxWidth = Juego.GAME_WIDTH - 2 * padding;
+				int boxHeight = 80;
+				int boxY = Juego.GAME_HEIGHT - boxHeight - 30;
+
+				// Fondo negro semitransparente
+				g.setColor(new Color(0, 0, 0, 200));
+				g.fillRoundRect(padding, boxY, boxWidth, boxHeight, 15, 15);
+
+				// Texto blanco
+				g.setColor(Color.WHITE);
+				g.setFont(g.getFont().deriveFont(20f));
+				g.drawString(texto, padding + 20, boxY + 50);
+			}
+		}
+
 		if (paused) {
 			g.setColor(new Color(0, 0, 0, 150));
 			g.fillRect(0, 0, Juego.GAME_WIDTH, Juego.GAME_HEIGHT);
@@ -351,8 +417,9 @@ public class Jugando extends Estados implements MetodosDeEstado {
 			pantallaDeNivelCompleto.draw(g);
 		else if (gameCompleted)
 			pantallaDeJuegoCompleto.draw(g);
-
 	}
+
+
 
 	private void drawClouds(Graphics g) {
 		for (int i = 0; i < 4; i++)
@@ -432,7 +499,16 @@ public class Jugando extends Estados implements MetodosDeEstado {
 
 	@Override
 // Controla las acciones del jugador al presionar teclas: movimiento, salto o pausa.
+
 	public void keyPressed(KeyEvent e) {
+		// 🎯 Si hay diálogo activo y el jugador presiona ENTER, avanza
+		if (intro != null && !intro.estaTerminada()) {
+			if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+				intro.confirmarDialogo();
+			}
+			return;
+		}
+
 		if (!gameOver && !gameCompleted && !lvlCompleted) {
 			switch (e.getKeyCode()) {
 				// Jugador 1
@@ -463,13 +539,14 @@ public class Jugando extends Estados implements MetodosDeEstado {
 					jugador2.powerAttack();
 					break;
 
-				// Pausa (una sola vez)
+				// Pausar
 				case KeyEvent.VK_ESCAPE:
 					paused = !paused;
 					break;
 			}
 		}
 	}
+
 
 	@Override
 	public void keyReleased(KeyEvent e) {
