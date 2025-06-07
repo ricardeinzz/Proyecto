@@ -1,0 +1,39 @@
+# Nivel 1
+ESPERA 1500
+DIALOGO ¡Despiertas rodeado de árboles gigantes!
+ESPERA 2000
+DIALOGO ¿Dónde estás? ¿Qué ha pasado?
+ESPERA 1500
+DIALOGO No recuerdo nada… solo... este bosque inmenso...
+
+# Nivel 2
+ESPERA 1500
+DIALOGO ¿Eso fue un disparo? ¿Un cañón?
+ESPERA 2000
+DIALOGO ¡Cangrejos con cañones! ¿En serio?
+ESPERA 1500
+DIALOGO No tengo tiempo para pensar, ¡tengo que esquivar!
+
+# Nivel 3
+ESPERA 1500
+DIALOGO El agua está más agitada aquí…
+ESPERA 2000
+DIALOGO ¡Esos tiburones no vienen a saludar!
+ESPERA 1500
+DIALOGO Están organizados... y armados. Esto ya no es un juego.
+
+# Nivel 4
+ESPERA 1500
+DIALOGO ¿Es de noche ahora? El cielo cambió…
+ESPERA 2000
+DIALOGO Cada rincón de este mundo es más raro que el anterior.
+ESPERA 1500
+DIALOGO Pero tengo que seguir… algo me guía, aunque no sé qué es.
+
+# Nivel 5
+ESPERA 1500
+DIALOGO ¿Estrellas marinas... enemigas?
+ESPERA 2000
+DIALOGO ¡¿Desde cuándo brillan con tanta rabia?!
+ESPERA 1500
+DIALOGO Sea como sea... esta es la última prueba. Vamos con todo.

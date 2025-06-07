@@ -117,6 +117,9 @@ public class Jugando extends Estados implements MetodosDeEstado {
 	    int nivelActual = levelManager.getLevelIndex() + 1;
 	    intro = cargarGuionDesdeArchivo("res/dialogos/dialogos.txt", nivelActual);
 	}
+	public boolean estaMostrandoDialogo() {
+	    return intro != null && !intro.estaTerminada();
+	}
 	private SecuenciaDeGuion cargarGuionDesdeArchivo(String nombreArchivo, int nivel) {
 	    SecuenciaDeGuion secuencia = new SecuenciaDeGuion();
 	    try (BufferedReader br = new BufferedReader(new FileReader(nombreArchivo))) {
@@ -249,7 +252,7 @@ public class Jugando extends Estados implements MetodosDeEstado {
 			//Control de escena narrativa
 			if (intro != null && !intro.estaTerminada()) {
 				intro.actualizar();
-				return; // Pausa el resto del juego mientras hay diálogo
+				
 			}
 
 			if (drawRain)
