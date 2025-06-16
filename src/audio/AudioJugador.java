@@ -57,6 +57,12 @@ public class AudioJugador {
 		updateEffectsVolume(); // Ajusta el volumen inicial
 	}
 
+	// Detiene la canción actual si está activa
+	public void detenerCancion() {
+		if (cancion[cancionActualId].isActive())
+			cancion[cancionActualId].stop();
+	}
+
 	// Carga un archivo .wav como Clip
 	private Clip getClip(String name) {
 		URL url = getClass().getResource("/audio/" + name + ".wav"); // Ruta del archivo de sonido
@@ -71,45 +77,10 @@ public class AudioJugador {
 		return null;
 	}
 
-	// Establece el volumen general
-	public void setVolumen(float volume) {
-		this.volumen = volume;
-		updateSongVolume();
-		updateEffectsVolume();
-	}
-
-	// Detiene la canción actual si está activa
-	public void detenerCancion() {
-		if (cancion[cancionActualId].isActive())
-			cancion[cancionActualId].stop();
-	}
-
-	// Cambia la canción según el índice del nivel (par/impar)
-	public void setLevelSong(int lvlIndex) {
-		if (lvlIndex % 2 == 0)
-			reproducirCancion(NIVEL_1);
-		else
-			reproducirCancion(NIVEL_2);
-	}
-
 	// Detiene la música y reproduce el sonido de "nivel completado"
 	public void lvlCompleto() {
 		detenerCancion();
 		reproducirEfecto(LVL_COMPLETADO);
-	}
-
-	// Reproduce aleatoriamente uno de los tres sonidos de ataque
-	public void reproducirSonidoDeAtaque() {
-		int start = 4;
-		start += rand.nextInt(3); // Escoge entre 4, 5 o 6
-		reproducirEfecto(start);
-	}
-
-	// Reproduce un efecto específico, reiniciando su posición si ya estaba sonando
-	public void reproducirEfecto(int effect) {
-		if (efectos[effect].getMicrosecondPosition() > 0)
-			efectos[effect].setMicrosecondPosition(0);
-		efectos[effect].start();
 	}
 
 	// Reproduce una canción de fondo en bucle
@@ -122,13 +93,33 @@ public class AudioJugador {
 		cancion[cancionActualId].loop(Clip.LOOP_CONTINUOUSLY);
 	}
 
-	// Alterna el estado de silencio de la música
-	public void toggleSongMute() {
-		this.cancionMute = !cancionMute;
-		for (Clip c : cancion) {
-			BooleanControl booleanControl = (BooleanControl) c.getControl(BooleanControl.Type.MUTE);
-			booleanControl.setValue(cancionMute);
-		}
+	// Reproduce un efecto específico, reiniciando su posición si ya estaba sonando
+	public void reproducirEfecto(int effect) {
+		if (efectos[effect].getMicrosecondPosition() > 0)
+			efectos[effect].setMicrosecondPosition(0);
+		efectos[effect].start();
+	}
+
+	// Reproduce aleatoriamente uno de los tres sonidos de ataque
+	public void reproducirSonidoDeAtaque() {
+		int start = 4;
+		start += rand.nextInt(3); // Escoge entre 4, 5 o 6
+		reproducirEfecto(start);
+	}
+
+	// Cambia la canción según el índice del nivel (par/impar)
+	public void setLevelSong(int lvlIndex) {
+		if (lvlIndex % 2 == 0)
+			reproducirCancion(NIVEL_1);
+		else
+			reproducirCancion(NIVEL_2);
+	}
+
+	// Establece el volumen general
+	public void setVolumen(float volume) {
+		this.volumen = volume;
+		updateSongVolume();
+		updateEffectsVolume();
 	}
 
 	// Alterna el estado de silencio de los efectos de sonido
@@ -142,12 +133,13 @@ public class AudioJugador {
 			reproducirEfecto(SALTO); // Reproduce sonido de salto como prueba si se reactivan los efectos
 	}
 
-	// Ajusta el volumen actual de la canción activa
-	private void updateSongVolume() {
-		FloatControl gainControl = (FloatControl) cancion[cancionActualId].getControl(FloatControl.Type.MASTER_GAIN);
-		float range = gainControl.getMaximum() - gainControl.getMinimum();
-		float gain = (range * volumen) + gainControl.getMinimum();
-		gainControl.setValue(gain);
+	// Alterna el estado de silencio de la música
+	public void toggleSongMute() {
+		this.cancionMute = !cancionMute;
+		for (Clip c : cancion) {
+			BooleanControl booleanControl = (BooleanControl) c.getControl(BooleanControl.Type.MUTE);
+			booleanControl.setValue(cancionMute);
+		}
 	}
 
 	// Ajusta el volumen de todos los efectos de sonido
@@ -158,6 +150,14 @@ public class AudioJugador {
 			float gain = (range * volumen) + gainControl.getMinimum();
 			gainControl.setValue(gain);
 		}
+	}
+
+	// Ajusta el volumen actual de la canción activa
+	private void updateSongVolume() {
+		FloatControl gainControl = (FloatControl) cancion[cancionActualId].getControl(FloatControl.Type.MASTER_GAIN);
+		float range = gainControl.getMaximum() - gainControl.getMinimum();
+		float gain = (range * volumen) + gainControl.getMinimum();
+		gainControl.setValue(gain);
 	}
 }
 

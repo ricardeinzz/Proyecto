@@ -300,4 +300,16 @@ public class Constantes {
 
 
 	}
+	/**
+	 * Identificadores simbólicos para los ingredientes que pueden formar parte de un platillo.
+	 * Se utilizan en la lógica de combinación de recetas.
+	 */
+	public static class Ingredientes {
+	    public static final String TIBURON = "Tiburon";
+	    public static final String CANGREJO = "Cangrejo";
+	    public static final String ESTRELLA = "Estrella";
+	    public static final String POCION_ROJA = "PocionRoja";
+	    public static final String POCION_AZUL = "PocionAzul";
+	}
+
 }

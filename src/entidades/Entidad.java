@@ -73,16 +73,11 @@ public abstract class Entidad {
 		}
 	}
 
-	// Mueve al personaje hacia atrás (retroceso) si es posible
-	protected void retroceder(int direccionRetroceso, int[][] lvlData, float multiplicadorVelocidad) {
-		float velocidadX = 0;
-		if (direccionRetroceso == IZQUIERDA)
-			velocidadX = -velocidadDeCaminar;
-		else
-			velocidadX = velocidadDeCaminar;
-
-		if (PuedeMoverAqui(cajaColision.x + velocidadX * multiplicadorVelocidad, cajaColision.y, cajaColision.width, cajaColision.height, lvlData))
-			cajaColision.x += velocidadX * multiplicadorVelocidad;
+	// Cambia el estado del personaje y reinicia la animación
+	protected void cambiarEstado(int estado) {
+		this.estado = estado;
+		contadorAnimacion = 0;
+		indiceAnimacion = 0;
 	}
 
 	// Dibuja la caja de ataque en pantalla (útil para depuración)
@@ -97,6 +92,11 @@ public abstract class Entidad {
 		g.drawRect((int) cajaColision.x - desplazamientoX, (int) cajaColision.y, (int) cajaColision.width, (int) cajaColision.height);
 	}
 
+	// Devuelve el estado actual del personaje (idle, corriendo, golpeado, etc.)
+	public int getState() {
+		return estado;
+	}
+
 	// Inicializa la caja de colisión con las dimensiones escaladas al tamaño del juego
 	protected void inicializarCajaColision(int ancho, int alto) {
 		cajaColision = new Rectangle2D.Float(x, y, (int) (ancho * Juego.SCALE), (int) (alto * Juego.SCALE));
@@ -107,20 +107,20 @@ public abstract class Entidad {
 		return cajaColision;
 	}
 
-	// Devuelve el estado actual del personaje (idle, corriendo, golpeado, etc.)
-	public int getState() {
-		return estado;
-	}
-
 	// Devuelve el índice de animación para saber qué frame dibujar
 	public int obtenerIndiceAnimacion() {
 		return indiceAnimacion;
 	}
 
-	// Cambia el estado del personaje y reinicia la animación
-	protected void cambiarEstado(int estado) {
-		this.estado = estado;
-		contadorAnimacion = 0;
-		indiceAnimacion = 0;
+	// Mueve al personaje hacia atrás (retroceso) si es posible
+	protected void retroceder(int direccionRetroceso, int[][] lvlData, float multiplicadorVelocidad) {
+		float velocidadX = 0;
+		if (direccionRetroceso == IZQUIERDA)
+			velocidadX = -velocidadDeCaminar;
+		else
+			velocidadX = velocidadDeCaminar;
+
+		if (PuedeMoverAqui(cajaColision.x + velocidadX * multiplicadorVelocidad, cajaColision.y, cajaColision.width, cajaColision.height, lvlData))
+			cajaColision.x += velocidadX * multiplicadorVelocidad;
 	}
 }

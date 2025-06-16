@@ -20,6 +20,43 @@ public class EfectosDeDialogo {
 		this.type = type;
 	}
 
+	// Método para desactivar manualmente el efecto.
+	public void deactive() {
+		active = false;
+	}
+
+	// Devuelve el tipo de diálogo (exclamación, interrogación, etc).
+	public int getType() {
+		return type;
+	}
+
+	// Devuelve la posición X.
+	public int getX() {
+		return x;
+	}
+
+	// Devuelve la posición Y.
+	public int getY() {
+		return y;
+	}
+
+	// Devuelve si el efecto está activo (visible) o no.
+	public boolean isActive() {
+		return active;
+	}
+
+	// Devuelve el índice actual de la animación.
+	public int obtenerIndiceAnimacion() {
+		return indiceAnimacion;
+	}
+
+	// Reinicia el efecto en una nueva posición, reactivándolo.
+	public void reset(int x, int y) {
+		this.x = x;
+		this.y = y;
+		active = true;
+	}
+
 	// Método que actualiza la animación del efecto.
 	public void update() {
 		contadorAnimacion++; // Aumenta el contador de tiempo de animación.
@@ -34,43 +71,6 @@ public class EfectosDeDialogo {
 				indiceAnimacion = 0; // Reinicia la animación por si se vuelve a usar.
 			}
 		}
-	}
-
-	// Método para desactivar manualmente el efecto.
-	public void deactive() {
-		active = false;
-	}
-
-	// Reinicia el efecto en una nueva posición, reactivándolo.
-	public void reset(int x, int y) {
-		this.x = x;
-		this.y = y;
-		active = true;
-	}
-
-	// Devuelve el índice actual de la animación.
-	public int obtenerIndiceAnimacion() {
-		return indiceAnimacion;
-	}
-
-	// Devuelve la posición X.
-	public int getX() {
-		return x;
-	}
-
-	// Devuelve la posición Y.
-	public int getY() {
-		return y;
-	}
-
-	// Devuelve el tipo de diálogo (exclamación, interrogación, etc).
-	public int getType() {
-		return type;
-	}
-
-	// Devuelve si el efecto está activo (visible) o no.
-	public boolean isActive() {
-		return active;
 	}
 }
 

@@ -90,24 +90,6 @@ public enum PersonajeJugable {
     }
 
     /**
-     * Devuelve la cantidad de sprites que tiene el personaje para una acción específica.
-     * @param player_action constante de la acción (IDLE, CORRIENDO, etc.)
-     * @return cantidad de sprites para la acción
-     */
-    public int getSpriteAmount(int player_action) {
-        return switch (player_action) {
-            case IDLE -> spriteA_IDLE;
-            case CORRIENDO -> spriteA_RUNNING;
-            case SALTANDO -> spriteA_JUMP;
-            case CAYENDO -> spriteA_FALLING;
-            case ATACANDO -> spriteA_ATTACK;
-            case HIT -> spriteA_HIT;
-            case MUERTO -> spriteA_DEAD;
-            default -> 1;
-        };
-    }
-
-    /**
      * Devuelve el índice de la fila en el atlas para una acción específica.
      * @param player_action constante de la acción
      * @return índice de la fila
@@ -121,6 +103,24 @@ public enum PersonajeJugable {
             case ATACANDO -> rowATTACK;
             case HIT -> rowHIT;
             case MUERTO -> rowDEAD;
+            default -> 1;
+        };
+    }
+
+    /**
+     * Devuelve la cantidad de sprites que tiene el personaje para una acción específica.
+     * @param player_action constante de la acción (IDLE, CORRIENDO, etc.)
+     * @return cantidad de sprites para la acción
+     */
+    public int getSpriteAmount(int player_action) {
+        return switch (player_action) {
+            case IDLE -> spriteA_IDLE;
+            case CORRIENDO -> spriteA_RUNNING;
+            case SALTANDO -> spriteA_JUMP;
+            case CAYENDO -> spriteA_FALLING;
+            case ATACANDO -> spriteA_ATTACK;
+            case HIT -> spriteA_HIT;
+            case MUERTO -> spriteA_DEAD;
             default -> 1;
         };
     }
