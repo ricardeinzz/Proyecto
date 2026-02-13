@@ -11,3 +11,7 @@ local.properties
 .recommenders
 .project
 .classpath
+*.png~
+out/
+.idea/
+.vscode/
