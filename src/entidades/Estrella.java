@@ -33,57 +33,70 @@ public class Estrella extends Enemigos {
 
 	// Método que define el comportamiento del enemigo según su estado y entorno.
 	private void actualizarComportamiento(int[][] lvlData, Jugando jugando) {
-		 Jugador jugador1=jugando.getPlayer();
-	     Jugador jugador2=jugando.getPlayer2();
-		if (primeraActualizacion)
-			firstUpdateCheck(lvlData); // Verificación inicial si está en el aire o no.
+	    Jugador jugador1 = jugando.getPlayer();
+	    Jugador jugador2 = jugando.getPlayer2();
 
-		if (enAire)
-			inAirChecks(lvlData, jugando); // Aplica lógica de caída si no hay piso.
-		else {
-			switch (estado) {
-				case IDLE: // Estado de espera sin movimiento.
-					preRoll = true; // Resetea la preparación para rodar.
-					if (tickDespuesRollEnIdle >= 120) { // Espera 120 ticks antes de volver a correr.
-						if (EsPiso(cajaColision, lvlData))
-							cambiarEstado(CORRIENDO); // Si hay piso, comienza a correr.
-						else
-							enAire = true; // Si no, cae.
+	    if (primeraActualizacion)
+	        firstUpdateCheck(lvlData);
 
-						tickDespuesRollEnIdle = 0;
-						tickdesdeElUltimoDmgPlayer = 60; // Reinicia contador de daño al jugador.
-					} else
-						tickDespuesRollEnIdle++; // Sigue esperando en IDLE.
-					break;
+	    if (enAire) {
+	        inAirChecks(lvlData, jugando);
+	    } else {
+	        switch (estado) {
+	            case IDLE:
+	                preRoll = true;
+	                if (tickDespuesRollEnIdle >= 120) {
+	                    if (EsPiso(cajaColision, lvlData))
+	                        cambiarEstado(CORRIENDO);
+	                    else
+	                        enAire = true;
 
-				case CORRIENDO: // Se está desplazando en busca del jugador.
-					if (canSeePlayer(lvlData,jugador1,jugador2)) { // Si ve al jugador...
-						cambiarEstado(ATACANDO); // Comienza ataque.
-						setWalkDir(jugando.getPlayer()); // Define hacia qué lado rodar.
-					}
-					mover(lvlData, jugando); // Se mueve mientras corre.
-					break;
+	                    tickDespuesRollEnIdle = 0;
+	                    tickdesdeElUltimoDmgPlayer = 60;
+	                } else {
+	                    tickDespuesRollEnIdle++;
+	                }
+	                break;
 
-				case ATACANDO: // Fase de ataque con rodado.
-					if (preRoll) { // Fase previa al rodado, sincronizada con animación.
-						if (indiceAnimacion >= 3)
-							preRoll = false;
-					} else {
-						mover(lvlData, jugando); // Se desplaza rápidamente.
-						checkDmgAlPlayer(jugando.getPlayer()); // Revisa si golpea al jugador.
-						checkRollOver(jugando); // Verifica si ya debe detener el rodado.
-					}
-					break;
+	            case CORRIENDO:
+	                if (canSeePlayer(lvlData, jugador1, jugador2)) {
+	                    cambiarEstado(ATACANDO);
 
-				case HIT: // Si fue golpeado por el jugador.
-					if (indiceAnimacion <= GetSpriteAmount(tipoEnemigo, estado) - 2)
-						retroceder(direccionRetroceso, lvlData, 2f); // Retrocede por el golpe.
-					actualizarDesplazamientoRetroceso(); // Ajusta desplazamiento por retroceso.
-					tickDespuesRollEnIdle = 120; // Al ser golpeado, espera 120 ticks antes de moverse.
-					break;
-			}
-		}
+	                    //Gira hacia el jugador más cercano
+	                    float d1 = Math.abs(jugador1.cajaColision.x - cajaColision.x);
+	                    float d2 = Math.abs(jugador2.cajaColision.x - cajaColision.x);
+	                    Jugador objetivo = (d1 < d2) ? jugador1 : jugador2;
+	                    setWalkDir(objetivo);
+	                }
+	                mover(lvlData, jugando);
+	                break;
+
+	            case ATACANDO:
+	                if (preRoll) {
+	                    if (indiceAnimacion >= 3)
+	                        preRoll = false;
+	                } else {
+	                    mover(lvlData, jugando);
+
+	                    //Revisa colisión contra ambos jugadores
+	                    checkDmgAlPlayer(jugador1);
+	                    checkDmgAlPlayer(jugador2);
+
+	                    checkRollOver(jugando);
+	                }
+	                break;
+
+	            case HIT:
+	                if (indiceAnimacion <= GetSpriteAmount(tipoEnemigo, estado) - 2)
+	                    retroceder(direccionRetroceso, lvlData, 2f);
+
+	                actualizarDesplazamientoRetroceso();
+	                tickDespuesRollEnIdle = 120;
+	                break;
+	        }
+	    }
 	}
+
 
 	// Verifica si está colisionando con el jugador para hacerle daño.
 	private void checkDmgAlPlayer(Jugador jugador) {
@@ -95,12 +108,13 @@ public class Estrella extends Enemigos {
 				tickdesdeElUltimoDmgPlayer++; // Si no, espera más ticks antes de volver a hacer daño.
 	}
 
-	// Define hacia qué dirección caminará la estrella (izquierda o derecha).
-	private void setWalkDir(Jugador jugador) {
-		if (jugador.obtenerCajaColision().x > cajaColision.x)
-			dirCaminar = DERECHA;
-		else
-			dirCaminar = IZQUIERDA;
+	// Verifica si ha rodado por suficiente tiempo y debe detenerse.
+	private void checkRollOver(Jugando jugando) {
+		duracionRollTick++;
+		if (duracionRollTick >= duracionRoll) {
+			rollOver(jugando);
+			duracionRollTick = 0;
+		}
 	}
 
 	// Lógica de movimiento de la estrella, diferente si está atacando.
@@ -133,19 +147,18 @@ public class Estrella extends Enemigos {
 		changeWalkDir(); // Cambia la dirección del movimiento si choca con algo.
 	}
 
-	// Verifica si ha rodado por suficiente tiempo y debe detenerse.
-	private void checkRollOver(Jugando jugando) {
-		duracionRollTick++;
-		if (duracionRollTick >= duracionRoll) {
-			rollOver(jugando);
-			duracionRollTick = 0;
-		}
-	}
-
 	// Detiene el rodado y vuelve al estado IDLE. Muestra un globo de pregunta como "¿dónde está el jugador?".
 	private void rollOver(Jugando jugando) {
 		cambiarEstado(IDLE);
 		jugando.addDialogue((int) cajaColision.x, (int) cajaColision.y, PREGUNTA);
+	}
+
+	// Define hacia qué dirección caminará la estrella (izquierda o derecha).
+	private void setWalkDir(Jugador jugador) {
+		if (jugador.obtenerCajaColision().x > cajaColision.x)
+			dirCaminar = DERECHA;
+		else
+			dirCaminar = IZQUIERDA;
 	}
 }
 

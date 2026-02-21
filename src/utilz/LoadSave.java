@@ -34,6 +34,7 @@ public class LoadSave {
     public static final String BOTON_VOLUMEN = "volume_buttons.png";
     public static final String MENU_FONDO_IMG = "background_menu.png";
     public static final String PLAYING_BG_IMG = "playing_bg_img.png";
+    public static final String OLLA_IMG = "score_sprite.png";
 
     // Fondo animado
     public static final String NUBES_GRANDES = "big_clouds.png";
@@ -62,6 +63,9 @@ public class LoadSave {
     public static final String AGUA_ARRIBA = "water_atlas_animation.png";
     public static final String AGUA_ABAJO = "water.png";
     public static final String BARCO = "ship.png";
+    public static final String MONEDA_CARA = "coin_face.png";
+    public static final String MONEDA_CRUZ = "coin_cross.png";
+    public static final String MONEDA_ATLAS = "coin_atlas.png";
 
     public static final String PREGUNTA_ATLAS = "question_atlas.png";
     public static final String EXCLAMACION_ATLAS = "exclamation_atlas.png";

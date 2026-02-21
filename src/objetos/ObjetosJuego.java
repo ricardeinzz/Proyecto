@@ -57,6 +57,7 @@ public class ObjetosJuego {
 	public void dibujarCajaColision(Graphics g, int xLvlOffset) {
 		g.setColor(Color.PINK);
 		g.drawRect((int) cajaColision.x - xLvlOffset, (int) cajaColision.y, (int) cajaColision.width, (int) cajaColision.height);
+	
 	}
 
 	public int getObjType() {

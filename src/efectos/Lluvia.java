@@ -27,15 +27,27 @@ public class Lluvia {
 		initDrops(); // Inicializa posiciones aleatorias de cada gota.
 	}
 
-	// Inicializa cada gota con una posición aleatoria en el eje X e Y.
-	private void initDrops() {
-		for (int i = 0; i < caida.length; i++)
-			caida[i] = getRndPos(); // Posición inicial aleatoria.
+	// Dibuja todas las gotas en pantalla con su posición actual.
+	public void dibujar(Graphics g, int xLvlOffset) {
+		for (Point2D.Float p : caida)
+			g.drawImage(particualasDeLluvia, (int) p.getX() - xLvlOffset, (int) p.getY(), 3, 12, null);
+	}
+
+	// Genera una nueva posición X aleatoria, desplazada según el offset del nivel.
+	private float getNewX(int xLvlOffset) {
+		float value = (-Juego.GAME_WIDTH) + rand.nextInt((int) (Juego.GAME_WIDTH * 3f)) + xLvlOffset;
+		return value;
 	}
 
 	// Genera una posición aleatoria en X dentro de un rango, y en Y dentro del alto del juego.
 	private Point2D.Float getRndPos() {
 		return new Point2D.Float((int) getNewX(0), rand.nextInt(Juego.GAME_HEIGHT));
+	}
+
+	// Inicializa cada gota con una posición aleatoria en el eje X e Y.
+	private void initDrops() {
+		for (int i = 0; i < caida.length; i++)
+			caida[i] = getRndPos(); // Posición inicial aleatoria.
 	}
 
 	// Actualiza la posición de cada gota, haciendo que caiga hacia abajo.
@@ -49,17 +61,5 @@ public class Lluvia {
 				p.x = getNewX(xLvlOffset); // Con nueva X aleatoria
 			}
 		}
-	}
-
-	// Genera una nueva posición X aleatoria, desplazada según el offset del nivel.
-	private float getNewX(int xLvlOffset) {
-		float value = (-Juego.GAME_WIDTH) + rand.nextInt((int) (Juego.GAME_WIDTH * 3f)) + xLvlOffset;
-		return value;
-	}
-
-	// Dibuja todas las gotas en pantalla con su posición actual.
-	public void dibujar(Graphics g, int xLvlOffset) {
-		for (Point2D.Float p : caida)
-			g.drawImage(particualasDeLluvia, (int) p.getX() - xLvlOffset, (int) p.getY(), 3, 12, null);
 	}
 }
